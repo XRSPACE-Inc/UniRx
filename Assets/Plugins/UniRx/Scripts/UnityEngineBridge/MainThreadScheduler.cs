@@ -74,6 +74,18 @@ namespace UniRx
             }
         }
 
+#if UNITY_2019_3_OR_NEWER && UNITY_EDITOR
+        // This callback is notified after assemblies have been loaded.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void DomainCleanup()
+        {
+            mainThread = null;
+            mainThreadIgnoreTimeScale = null;
+            mainThreadEndOfFrame = null;
+            mainThreadFixedUpdate = null;
+        }
+#endif
+
         class MainThreadScheduler : IScheduler, ISchedulerPeriodic, ISchedulerQueueing
         {
             readonly Action<object> scheduleAction;
