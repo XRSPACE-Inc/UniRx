@@ -1,9 +1,11 @@
 #if UNITY_EDITOR
 
 using UnityEditor;
-using UnityEditor.Callbacks;
 using UnityEngine;
 
+#if !UNITY_2019_3_OR_NEWER
+using UnityEditor.Callbacks;
+#endif
 namespace UniRx
 {
     [InitializeOnLoad]
@@ -38,8 +40,13 @@ namespace UniRx
             }
         }
 
+#if UNITY_2019_3_OR_NEWER && UNITY_EDITOR
+        // This callback is notified after assemblies have been loaded.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#else
         // This callback is notified after scripts have been reloaded.
         [DidReloadScripts]
+#endif
         public static void OnDidReloadScripts()
         {
             // Filter DidReloadScripts callbacks to the moment where playmodeState transitions into isPlaying.
@@ -54,9 +61,23 @@ namespace UniRx
         {
 #if UNITY_2017_2_OR_NEWER
             EditorApplication.playModeStateChanged += e =>
+            {
+                if (e == PlayModeStateChange.ExitingEditMode)
+                {
+                    AboutToStartScene = true;
+                }
+                else
+                {
+                    AboutToStartScene = false;
+                }
+
+                if (e == PlayModeStateChange.ExitingPlayMode)
+                {
+                    IsPlaying = false;
+                }
+            };
 #else
             EditorApplication.playmodeStateChanged += () =>
-#endif
             {
                 // Before scene start:          isPlayingOrWillChangePlaymode = false;  isPlaying = false
                 // Pressed Playback button:     isPlayingOrWillChangePlaymode = true;   isPlaying = false
@@ -77,6 +98,7 @@ namespace UniRx
                     IsPlaying = false;
                 }
             };
+#endif
         }
     }
 }

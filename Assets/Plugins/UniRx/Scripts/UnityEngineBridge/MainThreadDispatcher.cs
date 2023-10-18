@@ -408,6 +408,17 @@ namespace UniRx
         static bool initialized;
         static bool isQuitting = false;
 
+#if UNITY_2019_3_OR_NEWER && UNITY_EDITOR
+        // This callback is notified after assemblies have been loaded.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void DomainCleanup()
+        {
+            instance = null;
+            initialized = false;
+            isQuitting = false;
+        }
+#endif
+
         public static string InstanceName
         {
             get
